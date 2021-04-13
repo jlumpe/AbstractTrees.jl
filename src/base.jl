@@ -102,3 +102,60 @@ By default this recurses through all nodes in the tree and so may be slow if a m
 method has not been implemented for the given type.
 """
 treeheight(node) = isleaf(node) ? 0 : 1 + mapreduce(treeheight, max, children(node))
+
+
+
+#
+#  Parent- and ancestor-related functions
+#
+
+"""
+    parentnode(node)
+
+Get the parent of the given node, or `nothing` if the node is the root.
+"""
+function parentnode end
+
+
+"""
+    isroot(node)
+
+Check if the given node is a root node, i.e. has no parent.
+"""
+isroot(node) = isnothing(parentnode(node))
+
+
+"""
+    getroot(node)
+"""
+function getroot(node)
+    parent = parentnode(node)
+    return isnothing(parent) ? node : getroot(parent)
+end
+
+
+"""
+    treedepth(node)
+"""
+treedepth(node) = isroot(node) ? 0 : 1 + treedepth(parentnode(node))
+
+
+"""
+    ancestors(node; incself::Bool=false)
+
+Get an iterator over a node's ancestors in ascending order.
+
+If `incself=true` the iterator will start with `node` itself, otherwise it will start with `node`'s
+parent.
+"""
+ancestors(node; incself::Bool=false) = AncestorsIterator(incself ? node : parentnode(node))
+
+
+struct AncestorsIterator{T}
+    node::T
+end
+
+Base.IteratorEltype(::Type{AncestorsIterator{T}}) where T = hasmethod(nodetype, Tuple{T}) ? Base.HasEltype() : Base.EltypeUnknown()
+Base.eltype(::Type{AncestorsIterator{T}}) where T = nodetype(T)
+
+Base.iterate(a::AncestorsIterator, next=a.node) = isnothing(next) ? nothing : (next, parentnode(next))
