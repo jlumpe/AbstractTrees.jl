@@ -8,6 +8,7 @@ makedocs(
     pages = [
         "index.md",
         "implementing.md",
+        "examples.md",
         "api.md",
     ],
 )
